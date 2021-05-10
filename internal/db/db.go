@@ -4,6 +4,7 @@ import (
   "database/sql"
   "fmt"
   "os"
+  _ "github.com/mattn/go-sqlite3"
 )
 
 func CreateDb(fname string) bool {
