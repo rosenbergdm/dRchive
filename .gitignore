@@ -1,1 +1,4 @@
 test.db
+*.db
+/main
+bin/darchive
