@@ -9,11 +9,14 @@ GO = go
 OBJ = build/drchive
 
 build/drchive: cmd/drchive/main.go internal/db/db.go
+	$(GO) build -o build/drchive cmd/drchive/main.go
 
 drchive: $(OBJ)
 	$(GO) build -o build/drchive cmd/drchive/main.go
 
 .PHONY: clean all
+
+.DEFAULT: all
 
 clean:
 	rm -f $(OBJ)

@@ -5,9 +5,38 @@ import (
   "fmt"
   "errors"
   "os"
+  "time"
   "path/filepath"
   _ "github.com/mattn/go-sqlite3"
 )
+
+type DbEntry struct {
+  filepath string
+  mtime int64
+  lastactive int64
+  hash string
+}
+
+func GetEntry(db *sql.DB, filepath string) (*DbEntry, error) {
+  rows, err := db.Query("Select * from files where filepath = ?", filepath)
+  if err != nil {
+    return nil, err
+  }
+  var fpath string
+  var mtime time.Time
+  var lastactive time.Time
+  var hash string
+  var version int64
+
+  rows.Next()
+  err = rows.Scan(&fpath, &mtime, &lastactive, &hash, &version)
+  if err != nil { return nil, err }
+  entry := DbEntry{filepath: fpath, mtime: mtime.Unix(), lastactive: lastactive.Unix(), hash: hash}
+  if rows.Next() {
+    return nil, errors.New("More than 1 row returned")
+  }
+  return &entry, nil
+}
 
 func CreateDb(fname string) (*sql.DB, error) {
   _, err := os.Stat(fname)

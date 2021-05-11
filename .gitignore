@@ -1,4 +1,4 @@
 test.db
 *.db
-/main
-bin/darchive
+build/darchive
+build/darchive
