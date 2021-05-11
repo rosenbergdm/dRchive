@@ -17,6 +17,22 @@ type DbEntry struct {
   hash string
 }
 
+func NewEntry(db *sql.DB, filepath string, mtime int64, lastactive int64, hash string) error {
+  return nil
+}
+
+func AddEntry(db *sql.DB, entry *DbEntry) error {
+  return nil
+}
+
+func UpdateEntry(db *sql.DB, filepath string, mtime int64, lastactive int64, hash string) error {
+  return nil
+}
+
+func RemoveEntry(db *sql.DB, filepath string) error {
+  return nil
+}
+
 func GetEntry(db *sql.DB, filepath string) (*DbEntry, error) {
   rows, err := db.Query("Select * from files where filepath = ?", filepath)
   if err != nil {
