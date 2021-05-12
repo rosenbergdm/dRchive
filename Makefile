@@ -21,4 +21,7 @@ drchive: $(OBJ)
 clean:
 	rm -f $(OBJ)
 
+test:
+	cd include/db && $(GO) test
+
 all: drchive
