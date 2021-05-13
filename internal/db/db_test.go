@@ -27,7 +27,9 @@ func TestNewEntry(t *testing.T) {
 	}
   time.Sleep(time.Duration(100000))
   fmt.Printf("/usr/bin/sqlite3 %s -cmd 'SELECT * from files' -cmd '.exit 1'", dbfile.Name())
-	out, err := exec.Command(fmt.Sprintf("/usr/bin/sqlite3 %s -cmd 'SELECT * from files' -cmd '.exit 1'", dbfile.Name())).Output()
+  cmd := exec.Command("/usr/bin/sqlite3", dbfile.Name(), "-cmd", "SELECT * from files",  "-cmd", ".exit 1")
+  cmd.Run()
+  out, err := cmd.Output()
   fmt.Println(out)
 	expected := regexp.MustCompile(`^/bin/bash|\d+|\d+|/.bashrc|0|0|484e75d8a73cd9d782f080c028af50fa`)
 	if !expected.Match(out) {
