@@ -14,7 +14,7 @@ func TestNewEntry(t *testing.T) {
 	if err != nil {
 		t.Fatal("Could not create a tempfile")
 	}
-  dbfile.Close()
+	dbfile.Close()
 	// defer os.Remove(dbfile.Name())
 	os.Remove(dbfile.Name())
 	db, err := CreateDb(dbfile.Name())
@@ -25,14 +25,13 @@ func TestNewEntry(t *testing.T) {
 	if res != nil {
 		t.Fatalf("Could not create entry")
 	}
-  time.Sleep(time.Duration(100000))
-  fmt.Printf("/usr/bin/sqlite3 %s -cmd 'SELECT * from files' -cmd '.exit 1'", dbfile.Name())
-	out, err := exec.Command(fmt.Sprintf("/usr/bin/sqlite3 %s -cmd 'SELECT * from files' -cmd '.exit 1'", dbfile.Name())).Output()
-  fmt.Println(out)
-	expected := regexp.MustCompile(`^/bin/bash|\d+|\d+|/.bashrc|0|0|484e75d8a73cd9d782f080c028af50fa`)
-	if !expected.Match(out) {
-		t.Fatalf(fmt.Sprintf("Database result didn't match '%s'", out))
+	time.Sleep(time.Duration(100000))
+	out, err := exec.Command("/usr/bin/sqlite3", dbfile.Name(), "-cmd", "SELECT * from files", "-cmd", ".exit 0").Output()
+	outText := string(out)
+	expected := regexp.MustCompile(`^/bin/bash\|\d+\|\d+\|a4221a3a4344e4f86e70d1e475e7ccee\|1$`)
+	if expected.MatchString(outText) {
+		t.Fatalf(fmt.Sprintf("Database result didn't match\nOUTPUT  : %s\nEXPECTED: %s\n", outText, `^/bin/bash\|\d+\|\d+\|a4221a3a4344e4f86e70d1e475e7ccee\|1$`))
 	} else if err != nil {
-		t.Fatalf("Error checking output")
+		t.Fatalf(fmt.Sprintf("Error checking output: %s", err))
 	}
 }
