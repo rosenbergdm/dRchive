@@ -25,7 +25,6 @@ func TestNewEntry(t *testing.T) {
 	if res != nil {
 		t.Fatalf("Could not create entry")
 	}
-	time.Sleep(time.Duration(100000))
 	out, err := exec.Command("/usr/bin/sqlite3", dbfile.Name(), "-cmd", "SELECT * from files", "-cmd", ".exit 0").Output()
 	outText := string(out)
 	expected := regexp.MustCompile(`^/bin/bash\|\d+\|\d+\|a4221a3a4344e4f86e70d1e475e7ccee\|1$`)
