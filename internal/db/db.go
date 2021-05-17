@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	"os"
 	"path/filepath"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3" // For db driver
 )
 
+// Each file entry in the database
 type DbEntry struct {
 	filepath   string
 	mtime      int64
@@ -17,10 +19,10 @@ type DbEntry struct {
 	hash       string
 }
 
+// SQL Database containing the files and hashes
 type FileDb struct {
-  *sql.DB
+	*sql.DB
 }
-
 
 func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	_, err := db.Exec("INSERT INTO files (filepath, mtime, lastactive, hash) VALUES (?, ?, ?, ?)", filepath, mtime.Unix(), lastactive.Unix(), hash)
@@ -158,8 +160,8 @@ func createDb(fname string) (*FileDb, error) {
 		stmt.Exec()
 		fmt.Println("Schema written")
 	}
-  fdb := &FileDb { db }
-  return fdb, nil
+	fdb := &FileDb{db}
+	return fdb, nil
 
 }
 
@@ -185,6 +187,6 @@ func OpenDb(fname string) (*FileDb, error) {
 		stmt.Exec()
 		fmt.Println("Schema written")
 	}
-  fdb := &FileDb { db }
+	fdb := &FileDb{db}
 	return fdb, nil
 }
