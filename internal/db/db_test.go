@@ -15,7 +15,6 @@ func TestNewEntry(t *testing.T) {
 		t.Fatal("Could not create a tempfile")
 	}
 	dbfile.Close()
-	// defer os.Remove(dbfile.Name())
 	os.Remove(dbfile.Name())
 	db, err := CreateDb(dbfile.Name())
 	if err != nil {
