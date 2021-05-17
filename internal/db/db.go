@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+  log "github.com/sirupsen/logrus"
 
 	_ "github.com/mattn/go-sqlite3" // For db driver
 )
@@ -29,6 +30,7 @@ func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Tim
 	if err != nil {
 		return err
 	}
+  log.WithFields(log.Fields{"Filepath": filepath}).Info("New insertion")
 	return nil
 }
 
