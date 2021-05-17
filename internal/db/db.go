@@ -7,7 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-  log "github.com/sirupsen/logrus"
+
+	log "github.com/sirupsen/logrus"
 
 	_ "github.com/mattn/go-sqlite3" // For db driver
 )
@@ -25,12 +26,17 @@ type FileDb struct {
 	*sql.DB
 }
 
+func init() {
+	log.SetLevel(log.InfoLevel)
+	log.SetOutput(os.Stdout)
+}
+
 func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	_, err := db.Exec("INSERT INTO files (filepath, mtime, lastactive, hash) VALUES (?, ?, ?, ?)", filepath, mtime.Unix(), lastactive.Unix(), hash)
 	if err != nil {
 		return err
 	}
-  log.WithFields(log.Fields{"Filepath": filepath}).Info("New insertion")
+	log.WithFields(log.Fields{"Filepath": filepath}).Info("New insertion")
 	return nil
 }
 
@@ -39,34 +45,44 @@ func AddEntry(db *FileDb, entry *DbEntry) error {
 	if err != nil {
 		return err
 	}
+	log.WithFields(log.Fields{"Filepath": entry.filepath}).Info("New insertion")
 	return nil
 }
 
 func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	var err error
+	fields := log.Fields{"Filepath": filepath}
 	if mtime.IsZero() {
 		if lastactive.IsZero() {
-			if hash == "" {
+			if hash != "" {
 				_, err = db.Exec("UPDATE files set hash=? where filepath=?", hash, filepath)
+				fields["hash"] = hash
 			} else {
+				log.WithFields(fields).Fatal("Cannot update entry without any new fields")
 				err = nil
 			}
 		} else {
-			if hash == "" {
+			fields["lastactive"] = lastactive.String()
+			if hash != "" {
+				fields["hash"] = hash
 				_, err = db.Exec("UPDATE files set hash=?, lastactive=? where filepath=?", hash, lastactive.Unix(), filepath)
 			} else {
 				_, err = db.Exec("UPDATE files SET lastactive=? WHERE filepath=?", lastactive.Unix(), filepath)
 			}
 		}
 	} else {
+		fields["mtime"] = mtime.String()
 		if lastactive.IsZero() {
-			if hash == "" {
-				_, err = db.Exec("UPDATE files set hash=?, mtime=?, where filepath=?", hash, mtime.Unix(), filepath)
+			if hash != "" {
+				fields["hash"] = hash
+				_, err = db.Exec("UPDATE files set hash=?, mtime=? where filepath=?", hash, mtime.Unix(), filepath)
 			} else {
-				err = nil
+				_, err = db.Exec("Update files set mtime=? where filepath=?", mtime.Unix(), filepath)
 			}
 		} else {
-			if hash == "" {
+			fields["lastactive"] = lastactive.String()
+			if hash != "" {
+				fields["hash"] = hash
 				_, err = db.Exec("UPDATE files set hash=?, lastactive=?, mtime=? where filepath=?", hash, lastactive.Unix(), mtime.Unix(), filepath)
 			} else {
 				_, err = db.Exec("UPDATE files SET lastactive=?, mtime=? WHERE filepath=?", lastactive.Unix(), mtime.Unix(), filepath)
@@ -74,16 +90,20 @@ func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.T
 		}
 	}
 	if err != nil {
+		log.WithFields(fields).Fatal("Error updating record")
 		return err
 	}
+	log.WithFields(fields).Info("Record updated")
 	return nil
 }
 
 func RemoveEntry(db *FileDb, filepath string) error {
 	_, err := db.Exec("DELETE FROM files WHERE filepath=?", filepath)
 	if err != nil {
+		log.WithFields(log.Fields{"Filepath": filepath}).Fatal("Unable to delete")
 		return err
 	}
+	log.WithFields(log.Fields{"Filepath": filepath}).Info("Deletion successful")
 	return nil
 }
 
