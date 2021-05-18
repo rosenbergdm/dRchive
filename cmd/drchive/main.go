@@ -1,11 +1,13 @@
 package main
 
 import (
+	// "flag"
 	"fmt"
 	"os"
-  "flag"
 
-	// docopt "github.com/docopt/docopt-go"
+	docopt "github.com/docopt/docopt-go"
+	"github.com/rosenbergdm/dRchive/internal/log"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -28,34 +30,35 @@ Options:
   --configfile=<configfile>   File containing all configuration params
   --version                   Version
 `
-  help := flag.Bool("help", false, "Display usage")
-  debug := flag.Bool("debug", false, "Set maximal output")
-  verbose := flag.Bool("verbose", false, "Set verbose output")
-  version := flag.Bool("version", false, "Display version number")
-  configfile := flag.String("configfile", "", "Configuration file")
+	// help := flag.Bool("help", false, "Display usage")
+	// debug := flag.Bool("debug", false, "Set maximal output")
+	// verbose := flag.Bool("verbose", false, "Set verbose output")
+	// version := flag.Bool("version", false, "Display version number")
+	// configfile := flag.String("configfile", "", "Configuration file")
 
-  flag.Parse()
-  fmt.Println("'help' has value: ", *help)
-  fmt.Println("'debug' has value: ", *debug)
-  fmt.Println("'verbose' has value: ", *verbose)
-  fmt.Println("'version' has value: ", *version)
-  fmt.Println("'configfile' has value: ", *configfile)
+	// flag.Parse()
+	// fmt.Println("'help' has value: ", *help)
+	// fmt.Println("'debug' has value: ", *debug)
+	// fmt.Println("'verbose' has value: ", *verbose)
+	// fmt.Println("'version' has value: ", *version)
+	// fmt.Println("'configfile' has value: ", *configfile)
 
-  fmt.Println(usage)
+	// fmt.Println(usage)
 
-  os.Exit(0)
+	// fmt.Print("\n---------------------\n\n")
+	log.LogError(logrus.Fields{}, "help************************")
+	log.LogWarn(logrus.Fields{"testing": "123"}, "help")
+	opts, err := docopt.ParseArgs(usage, os.Args[1:], "0.0.1")
 
-
-// 	opts, err := docopt.ParseArgs(usage, os.Args[1:], "0.0.1")
-
-// 	if err == nil {
-// 		fmt.Println("Arguments parsed successfully")
-// 		fmt.Println(opts)
-// 	} else {
-// 		fmt.Printf("%+v\n", err)
-// 		fmt.Println("Arguments NOT parsed successfully")
-// 		fmt.Println(err.Error())
-// 	}
+	if err == nil {
+		fmt.Println("Arguments parsed successfully")
+		docopt.PrintHelpOnly(err, usage)
+		fmt.Println(opts)
+	} else {
+		fmt.Printf("%+v\n", err)
+		fmt.Println("Arguments NOT parsed successfully")
+		fmt.Println(err.Error())
+	}
 	// 	if len(os.Args) < 2 {
 	// 		fmt.Println("USAGE: ", os.Args[0], " <DATABASE>")
 	// 		os.Exit(1)
