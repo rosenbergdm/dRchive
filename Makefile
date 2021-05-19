@@ -8,7 +8,7 @@ GO = go
 
 OBJ = build/drchive
 
-build/drchive: cmd/drchive/main.go internal/db/db.go
+build/drchive: cmd/drchive/main.go internal/db/db.go internal/file/file.go internal/log/log.go
 	$(GO) build -o build/drchive cmd/drchive/main.go
 
 drchive: $(OBJ)

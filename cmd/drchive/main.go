@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	docopt "github.com/docopt/docopt-go"
 	"github.com/rosenbergdm/dRchive/internal/log"
+
+	docopt "github.com/docopt/docopt-go"
 	"github.com/sirupsen/logrus"
 )
 
