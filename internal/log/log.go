@@ -12,12 +12,24 @@ func init() {
 	logrus.SetOutput(os.Stdout)
 }
 
-func ConfigLogger(level logrus.Level, target io.Writer) {
-	logrus.SetLevel(level)
+func ConfigLogger(level Level, target io.Writer) {
+	logrus.SetLevel(logrus.Level(level))
 	logrus.SetOutput(target)
 }
 
 type Fields map[string]interface{}
+
+type Level logrus.Level
+
+const (
+	PanicLevel Level = Level(logrus.PanicLevel)
+	FatalLevel Level = Level(logrus.FatalLevel)
+	ErrorLevel Level = Level(logrus.ErrorLevel)
+	WarnLevel  Level = Level(logrus.WarnLevel)
+	InfoLevel  Level = Level(logrus.InfoLevel)
+	DebugLevel Level = Level(logrus.DebugLevel)
+	TraceLevel Level = Level(logrus.TraceLevel)
+)
 
 func LogInfo(fields Fields, message string) {
 	logrus.WithFields(logrus.Fields(fields)).Info(message)
