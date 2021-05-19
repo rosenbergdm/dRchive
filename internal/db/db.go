@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/rosenbergdm/dRchive/internal/log"
+
+	"github.com/sirupsen/logrus"
 
 	_ "github.com/mattn/go-sqlite3" // For db driver
 )
@@ -27,8 +29,8 @@ type FileDb struct {
 }
 
 func init() {
-	log.SetLevel(log.InfoLevel)
-	log.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetOutput(os.Stdout)
 }
 
 func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
@@ -36,7 +38,7 @@ func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Tim
 	if err != nil {
 		return err
 	}
-	log.WithFields(log.Fields{"Filepath": filepath}).Info("New insertion")
+	log.LogInfo(log.Fields{"Filepath": filepath}, "New Insertion")
 	return nil
 }
 
@@ -45,20 +47,20 @@ func AddEntry(db *FileDb, entry *DbEntry) error {
 	if err != nil {
 		return err
 	}
-	log.WithFields(log.Fields{"Filepath": entry.filepath}).Info("New insertion")
+	log.LogInfo(log.Fields{"Filepath": entry.filepath}, "New insertion")
 	return nil
 }
 
 func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	var err error
-	fields := log.Fields{"Filepath": filepath}
+	fields := logrus.Fields{"Filepath": filepath}
 	if mtime.IsZero() {
 		if lastactive.IsZero() {
 			if hash != "" {
 				_, err = db.Exec("UPDATE files set hash=? where filepath=?", hash, filepath)
 				fields["hash"] = hash
 			} else {
-				log.WithFields(fields).Fatal("Cannot update entry without any new fields")
+				logrus.WithFields(fields).Fatal("Cannot update entry without any new fields")
 				err = nil
 			}
 		} else {
@@ -90,20 +92,20 @@ func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.T
 		}
 	}
 	if err != nil {
-		log.WithFields(fields).Fatal("Error updating record")
+		logrus.WithFields(fields).Fatal("Error updating record")
 		return err
 	}
-	log.WithFields(fields).Info("Record updated")
+	logrus.WithFields(fields).Info("Record updated")
 	return nil
 }
 
 func RemoveEntry(db *FileDb, filepath string) error {
 	_, err := db.Exec("DELETE FROM files WHERE filepath=?", filepath)
 	if err != nil {
-		log.WithFields(log.Fields{"Filepath": filepath}).Fatal("Unable to delete")
+		logrus.WithFields(logrus.Fields{"Filepath": filepath}).Fatal("Unable to delete")
 		return err
 	}
-	log.WithFields(log.Fields{"Filepath": filepath}).Info("Deletion successful")
+	logrus.WithFields(logrus.Fields{"Filepath": filepath}).Info("Deletion successful")
 	return nil
 }
 

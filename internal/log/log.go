@@ -17,50 +17,52 @@ func ConfigLogger(level logrus.Level, target io.Writer) {
 	logrus.SetOutput(target)
 }
 
-func LogInfo(fields logrus.Fields, message string) {
-	logrus.WithFields(fields).Info(message)
+type Fields map[string]interface{}
+
+func LogInfo(fields Fields, message string) {
+	logrus.WithFields(logrus.Fields(fields)).Info(message)
 }
 
-func LogFatal(fields logrus.Fields, message string) {
-	logrus.WithFields(fields).Fatal(message)
+func LogFatal(fields Fields, message string) {
+	logrus.WithFields(logrus.Fields(fields)).Fatal(message)
 }
 
-func LogWarn(fields logrus.Fields, message string) {
-	logrus.WithFields(fields).Warn(message)
+func LogWarn(fields Fields, message string) {
+	logrus.WithFields(logrus.Fields(fields)).Warn(message)
 }
 
-func LogDebug(fields logrus.Fields, message string) {
-	logrus.WithFields(fields).Debug(message)
+func LogDebug(fields Fields, message string) {
+	logrus.WithFields(logrus.Fields(fields)).Debug(message)
 }
 
-func LogError(fields logrus.Fields, message string) {
-	logrus.WithFields(fields).Error(message)
+func LogError(fields Fields, message string) {
+	logrus.WithFields(logrus.Fields(fields)).Error(message)
 }
 
-func LogPanic(fields logrus.Fields, message string) {
-	logrus.WithFields(fields).Panic(message)
+func LogPanic(fields Fields, message string) {
+	logrus.WithFields(logrus.Fields(fields)).Panic(message)
 }
 
-func LogInfof(fields logrus.Fields, message string, args ...interface{}) {
-	logrus.WithFields(fields).Infof(message, args...)
+func LogInfof(fields Fields, message string, args ...interface{}) {
+	logrus.WithFields(logrus.Fields(fields)).Infof(message, args...)
 }
 
-func LogFatalf(fields logrus.Fields, message string, args ...interface{}) {
-	logrus.WithFields(fields).Fatalf(message, args...)
+func LogFatalf(fields Fields, message string, args ...interface{}) {
+	logrus.WithFields(logrus.Fields(fields)).Fatalf(message, args...)
 }
 
-func LogWarnf(fields logrus.Fields, message string, args ...interface{}) {
-	logrus.WithFields(fields).Warnf(message, args...)
+func LogWarnf(fields Fields, message string, args ...interface{}) {
+	logrus.WithFields(logrus.Fields(fields)).Warnf(message, args...)
 }
 
-func LogDebugf(fields logrus.Fields, message string, args ...interface{}) {
-	logrus.WithFields(fields).Debugf(message, args...)
+func LogDebugf(fields Fields, message string, args ...interface{}) {
+	logrus.WithFields(logrus.Fields(fields)).Debugf(message, args...)
 }
 
-func LogErrorf(fields logrus.Fields, message string, args ...interface{}) {
-	logrus.WithFields(fields).Errorf(message, args...)
+func LogErrorf(fields Fields, message string, args ...interface{}) {
+	logrus.WithFields(logrus.Fields(fields)).Errorf(message, args...)
 }
 
-func LogPanicf(fields logrus.Fields, message string, args ...interface{}) {
-	logrus.WithFields(fields).Panicf(message, args...)
+func LogPanicf(fields Fields, message string, args ...interface{}) {
+	logrus.WithFields(logrus.Fields(fields)).Panicf(message, args...)
 }
