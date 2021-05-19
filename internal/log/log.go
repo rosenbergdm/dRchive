@@ -12,7 +12,7 @@ func init() {
 	logrus.SetOutput(os.Stdout)
 }
 
-func ConfigLogger(level Level, target io.Writer) {
+func Config(level Level, target io.Writer) {
 	logrus.SetLevel(logrus.Level(level))
 	logrus.SetOutput(target)
 }
@@ -35,27 +35,23 @@ func Info(message string, fields Fields) {
 	logrus.WithFields(logrus.Fields(fields)).Info(message)
 }
 
-func LogInfo(fields Fields, message string) {
-	logrus.WithFields(logrus.Fields(fields)).Info(message)
-}
-
-func LogFatal(fields Fields, message string) {
+func Fatal(message string, fields Fields) {
 	logrus.WithFields(logrus.Fields(fields)).Fatal(message)
 }
 
-func LogWarn(fields Fields, message string) {
+func Warn(message string, fields Fields) {
 	logrus.WithFields(logrus.Fields(fields)).Warn(message)
 }
 
-func LogDebug(fields Fields, message string) {
+func Debug(message string, fields Fields) {
 	logrus.WithFields(logrus.Fields(fields)).Debug(message)
 }
 
-func LogError(fields Fields, message string) {
+func Error(message string, fields Fields) {
 	logrus.WithFields(logrus.Fields(fields)).Error(message)
 }
 
-func LogPanic(fields Fields, message string) {
+func Panic(message string, fields Fields) {
 	logrus.WithFields(logrus.Fields(fields)).Panic(message)
 }
 

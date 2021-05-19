@@ -26,7 +26,7 @@ type FileDb struct {
 }
 
 func init() {
-	log.ConfigLogger(log.InfoLevel, os.Stdout)
+	log.Config(log.InfoLevel, os.Stdout)
 }
 
 func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
@@ -34,7 +34,7 @@ func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Tim
 	if err != nil {
 		return err
 	}
-	log.LogInfo(log.Fields{"filepath": filepath}, "New Insertion")
+	log.Info("New Insertion", log.Fields{"filepath": filepath})
 	return nil
 }
 
@@ -43,7 +43,7 @@ func AddEntry(db *FileDb, entry *DbEntry) error {
 	if err != nil {
 		return err
 	}
-	log.LogInfo(log.Fields{"filepath": entry.filepath}, "New insertion")
+	log.Info("New insertion", log.Fields{"filepath": entry.filepath})
 	return nil
 }
 
@@ -88,27 +88,27 @@ func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.T
 	}
 	if err != nil {
 		fields["errror"] = err
-		log.LogWarn(fields, "Cannot update entry without any new fields")
+		log.Warn("Cannot update entry without any new fields", fields)
 		return err
 	}
-	log.LogInfo(fields, "Record updated")
+	log.Info("Record updated", fields)
 	return nil
 }
 
 func RemoveEntry(db *FileDb, filepath string) error {
 	_, err := db.Exec("DELETE FROM files WHERE filepath=?", filepath)
 	if err != nil {
-		log.LogWarn(log.Fields{"filepath": filepath, "error": err}, "Unable to delete")
+		log.Warn("Unable to delete", log.Fields{"filepath": filepath, "error": err})
 		return err
 	}
-	log.LogInfo(log.Fields{"filepath": filepath}, "Deletion successful")
+	log.Info("Deletion successful", log.Fields{"filepath": filepath})
 	return nil
 }
 
 func GetEntry(db *FileDb, filepath string) (*DbEntry, error) {
 	rows, err := db.Query("Select * from files where filepath = ?", filepath)
 	if err != nil {
-		log.LogFatal(log.Fields{"filepath": filepath}, "Unable to query database")
+		log.Fatal("Unable to query database", log.Fields{"filepath": filepath})
 		return nil, err
 	}
 	var fpath string
@@ -120,34 +120,34 @@ func GetEntry(db *FileDb, filepath string) (*DbEntry, error) {
 	rows.Next()
 	err = rows.Scan(&fpath, &mtime, &lastactive, &hash, &version)
 	if err != nil {
-		log.LogWarn(log.Fields{"filepath": filepath}, "No entry matches query")
+		log.Warn("No entry matches query", log.Fields{"filepath": filepath})
 		return nil, err
 	}
 	entry := DbEntry{filepath: fpath, mtime: mtime.Unix(), lastactive: lastactive.Unix(), hash: hash}
 	if rows.Next() {
-		log.LogFatal(log.Fields{"filepath": filepath}, "Multiple entries with identical paths found!")
+		log.Fatal("Multiple entries with identical paths found!", log.Fields{"filepath": filepath})
 	}
-	log.LogInfo(log.Fields{"filepath": filepath}, "Found entry")
+	log.Info("Found entry", log.Fields{"filepath": filepath})
 	return &entry, nil
 }
 
 func CreateDb(fname string) (*FileDb, error) {
 	_, err := os.Stat(fname)
 	if err == nil {
-		log.LogFatal(log.Fields{"dbfile": fname}, "File already exists!")
+		log.Fatal("File already exists!", log.Fields{"dbfile": fname})
 	} else if os.IsNotExist(err) {
 		dir := filepath.Dir(fname)
 		info2, err2 := os.Stat(dir)
 		if err2 == nil {
 			if !info2.IsDir() {
-				log.LogFatal(log.Fields{"directory": dir}, "Directory does not exist")
+				log.Fatal("Directory does not exist", log.Fields{"directory": dir})
 			}
 			return createDb(fname)
 		} else {
-			log.LogFatal(log.Fields{"directory": dir}, "Cannot read directory")
+			log.Fatal("Cannot read directory", log.Fields{"directory": dir})
 		}
 	} else {
-		log.LogFatal(log.Fields{"directory": fname}, "Cannot read directory")
+		log.Fatal("Cannot read directory", log.Fields{"directory": fname})
 	}
 	return nil, errors.New("Unknown error")
 }
@@ -155,12 +155,12 @@ func CreateDb(fname string) (*FileDb, error) {
 func createDb(fname string) (*FileDb, error) {
 	fh, err := os.Create(fname)
 	if err != nil {
-		log.LogFatal(log.Fields{"fname": fname}, "Error creating file")
+		log.Fatal("Error creating file", log.Fields{"fname": fname})
 	}
 	fh.Close()
 	db, err := sql.Open("sqlite3", fname)
 	if err != nil {
-		log.LogFatal(log.Fields{"fname": fname}, "Error opening file with sqlite3")
+		log.Fatal("Error opening file with sqlite3", log.Fields{"fname": fname})
 	}
 	stmt, err := db.Prepare(`
     CREATE TABLE files (
@@ -172,9 +172,9 @@ func createDb(fname string) (*FileDb, error) {
     );`)
 	stmt.Exec()
 	if err != nil {
-		log.LogFatal(log.Fields{"fname": fname, "error": err}, "Error writing schema")
+		log.Fatal("Error writing schema", log.Fields{"fname": fname, "error": err})
 	} else {
-		log.LogInfo(log.Fields{"dbfile": fname}, "Schema written")
+		log.Info("Schema written", log.Fields{"dbfile": fname})
 	}
 	fdb := &FileDb{db}
 	return fdb, nil
@@ -183,9 +183,9 @@ func createDb(fname string) (*FileDb, error) {
 func OpenDb(fname string) (*FileDb, error) {
 	db, err := sql.Open("sqlite3", fname)
 	if err != nil {
-		log.LogFatal(log.Fields{"fname": fname}, "Error opening file with sqlite3")
+		log.Fatal("Error opening file with sqlite3", log.Fields{"fname": fname})
 	}
-	log.LogInfo(log.Fields{"dbfile": fname}, "DB opened")
+	log.Info("DB opened", log.Fields{"dbfile": fname})
 	fdb := &FileDb{db}
 	return fdb, nil
 }

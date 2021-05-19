@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	log.ConfigLogger(log.WarnLevel, os.Stdout)
+	log.Config(log.WarnLevel, os.Stdout)
 }
 
 func main() {
@@ -53,15 +53,15 @@ Options:
 	// log.LogWarn(logrus.Fields{"testing": "123"}, "help")
 	opts, err := docopt.ParseArgs(usage, os.Args[1:], "0.0.1")
 	if err != nil {
-		log.LogFatal(log.Fields{}, "Unable to parse commandline args")
+		log.Fatal("Unable to parse commandline args", log.Fields{})
 	}
 
 	if opts["--debug"].(bool) == true {
-		log.ConfigLogger(log.InfoLevel, os.Stdout)
-		log.LogInfo(log.Fields{}, "Sending DEBUG output to STDOUT")
+		log.Config(log.InfoLevel, os.Stdout)
+		log.Info("Sending DEBUG output to STDOUT", log.Fields{})
 	}
 
-	log.LogInfo(log.Fields{"options": opts}, "Arguments parsed successfully")
+	log.Info("Arguments parsed successfully", log.Fields{"options": opts})
 
 	// 	if len(os.Args) < 2 {
 	// 		fmt.Println("USAGE: ", os.Args[0], " <DATABASE>")
