@@ -19,7 +19,7 @@ func ConfigLogger(level Level, target io.Writer) {
 
 type Fields map[string]interface{}
 
-type Level logrus.Level
+type Level uint64
 
 const (
 	PanicLevel Level = Level(logrus.PanicLevel)
@@ -30,6 +30,10 @@ const (
 	DebugLevel Level = Level(logrus.DebugLevel)
 	TraceLevel Level = Level(logrus.TraceLevel)
 )
+
+func Info(message string, fields Fields) {
+	logrus.WithFields(logrus.Fields(fields)).Info(message)
+}
 
 func LogInfo(fields Fields, message string) {
 	logrus.WithFields(logrus.Fields(fields)).Info(message)
