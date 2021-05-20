@@ -34,10 +34,9 @@ func init() {
 func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	_, err := db.Exec("INSERT INTO files (filepath, mtime, lastactive, hash) VALUES (?, ?, ?, ?)", filepath, mtime.Unix(), lastactive.Unix(), hash)
 	if err != nil {
-		return err
+		log.Warn("Error while inserting", log.Fields{"filepath": filepath, "error": err})
 	}
-	log.Info("New Insertion", log.Fields{"filepath": filepath})
-	return nil
+	return err
 }
 
 func (db *FileDb) AddEntry(entry *DbEntry) error {

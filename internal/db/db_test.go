@@ -14,19 +14,21 @@ func setupTestDb() (*FileDb, func(), string) {
 	log.Config(log.ErrorLevel, os.Stdout)
 	dbfile, err := os.CreateTemp("", "tempdb.*.db")
 	if err != nil {
-		log.Fatal("Could not create a tempfile", nil)
+		log.Fatal("setupTestDb error: Could not create a tempfile", nil)
 	}
 	dbfile.Close()
 	os.Remove(dbfile.Name())
 	db, err := CreateDb(dbfile.Name())
 	if err != nil {
-		log.Fatal("Could not write test db", log.Fields{"dbfile": dbfile.Name(), "error": err.Error()})
+		log.Fatal("setupTestDb error: Could not write test db", log.Fields{"dbfile": dbfile.Name(), "error": err.Error()})
 	}
 	tearDown := func() {
 		db.Close()
+		// fmt.Printf("File is '%s'\n\n", dbfile.Name())
 		os.Remove(dbfile.Name())
 	}
 	log.Config(log.PanicLevel, os.Stdout)
+	// log.Config(log.InfoLevel, os.Stdout)
 	return db, tearDown, dbfile.Name()
 }
 
@@ -58,14 +60,15 @@ func TestNewEntryNoDups(t *testing.T) {
 	err = db.NewEntry("/bin/bash", time.Time{}, time.Time{}, "a4221a3a4344e4f86e70d1e475e7ccff")
 	if err == nil {
 		t.Fatal("Allowed a duplicate entries")
+		os.Exit(99)
 	}
-	rows, err2 := db.Query("SELECT COUNT * FROM files")
-	if err2 != nil {
-		t.Fatalf("error querying test db '%s'", err.Error())
-	}
+	row := db.QueryRow("SELECT COUNT(*) FROM files")
 	var count int64
-	rows.Scan(&count)
+	err = row.Scan(&count)
+	if err != nil {
+		t.Fatalf("error querying test db '%v'", err)
+	}
 	if count != 1 {
-		t.Fatal("Multiple returns for a search!")
+		t.Fatalf("Multiple returns for a search: count=%v", count)
 	}
 }
