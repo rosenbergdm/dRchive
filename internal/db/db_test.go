@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
@@ -11,7 +12,12 @@ import (
 )
 
 func setupTestDb() (*FileDb, func(), string) {
-	log.Config(log.ErrorLevel, os.Stdout)
+	debugTests := os.Getenv("DEBUG_TESTS")
+	if debugTests != "" {
+		log.Config(log.InfoLevel, os.Stdout)
+	} else {
+		log.Config(log.ErrorLevel, os.Stdout)
+	}
 	dbfile, err := os.CreateTemp("", "tempdb.*.db")
 	if err != nil {
 		log.Fatal("setupTestDb error: Could not create a tempfile", nil)
@@ -24,11 +30,14 @@ func setupTestDb() (*FileDb, func(), string) {
 	}
 	tearDown := func() {
 		db.Close()
-		// fmt.Printf("File is '%s'\n\n", dbfile.Name())
-		os.Remove(dbfile.Name())
+		if debugTests != "" {
+			log.Config(log.InfoLevel, os.Stdout)
+			fmt.Printf("File is '%s'\n\n", dbfile.Name())
+		} else {
+			os.Remove(dbfile.Name())
+			log.Config(log.PanicLevel, os.Stdout)
+		}
 	}
-	log.Config(log.PanicLevel, os.Stdout)
-	// log.Config(log.InfoLevel, os.Stdout)
 	return db, tearDown, dbfile.Name()
 }
 
@@ -71,4 +80,20 @@ func TestNewEntryNoDups(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("Multiple returns for a search: count=%v", count)
 	}
+}
+
+func TestAddEntry(t *testing.T) {
+
+}
+
+func TestRemoveEntry(t *testing.T) {
+
+}
+
+func TestGetEntry(t *testing.T) {
+
+}
+
+func TestOpenDb(t *testing.T) {
+
 }
