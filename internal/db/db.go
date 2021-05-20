@@ -12,7 +12,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // For db driver
 )
 
-// Each file entry in the database
+// File entry in the database
 type DbEntry struct {
 	filepath   string
 	mtime      int64
@@ -25,10 +25,12 @@ type FileDb struct {
 	*sql.DB
 }
 
+// Sets default config parameters
 func init() {
 	log.Config(log.InfoLevel, os.Stdout)
 }
 
+// Create a new database entry from components
 func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	_, err := db.Exec("INSERT INTO files (filepath, mtime, lastactive, hash) VALUES (?, ?, ?, ?)", filepath, mtime.Unix(), lastactive.Unix(), hash)
 	if err != nil {
@@ -38,7 +40,7 @@ func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Tim
 	return nil
 }
 
-func AddEntry(db *FileDb, entry *DbEntry) error {
+func (db *FileDb) AddEntry(entry *DbEntry) error {
 	_, err := db.Exec("INSERT INTO files (filepath, mtime, lastactive, hash) VALUES (?, ?, ?, ?)", entry.filepath, entry.mtime, entry.lastactive, entry.hash)
 	if err != nil {
 		return err
@@ -47,7 +49,7 @@ func AddEntry(db *FileDb, entry *DbEntry) error {
 	return nil
 }
 
-func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.Time, hash string) error {
+func (db *FileDb) UpdateEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
 	var err error
 	fields := map[string]interface{}{"filepath": filepath}
 	if mtime.IsZero() {
@@ -95,7 +97,7 @@ func UpdateEntry(db *FileDb, filepath string, mtime time.Time, lastactive time.T
 	return nil
 }
 
-func RemoveEntry(db *FileDb, filepath string) error {
+func (db *FileDb) RemoveEntry(filepath string) error {
 	_, err := db.Exec("DELETE FROM files WHERE filepath=?", filepath)
 	if err != nil {
 		log.Warn("Unable to delete", log.Fields{"filepath": filepath, "error": err})
@@ -105,7 +107,7 @@ func RemoveEntry(db *FileDb, filepath string) error {
 	return nil
 }
 
-func GetEntry(db *FileDb, filepath string) (*DbEntry, error) {
+func (db *FileDb) GetEntry(filepath string) (*DbEntry, error) {
 	rows, err := db.Query("Select * from files where filepath = ?", filepath)
 	if err != nil {
 		log.Fatal("Unable to query database", log.Fields{"filepath": filepath})
