@@ -20,6 +20,15 @@ type DbEntry struct {
 	hash       string
 }
 
+func NewDbEntry(f string, m, int64, l int64, h string) *DbEntry {
+	return &DbEntry{
+		filepath:   f,
+		mtime:      m,
+		lastactive: l,
+		hash:       h,
+	}
+}
+
 // SQL Database containing the files and hashes
 type FileDb struct {
 	*sql.DB
@@ -42,10 +51,10 @@ func (db *FileDb) NewEntry(filepath string, mtime time.Time, lastactive time.Tim
 func (db *FileDb) AddEntry(entry *DbEntry) error {
 	_, err := db.Exec("INSERT INTO files (filepath, mtime, lastactive, hash) VALUES (?, ?, ?, ?)", entry.filepath, entry.mtime, entry.lastactive, entry.hash)
 	if err != nil {
-		return err
+		log.Warn("Error while adding entry", log.Fields{"filepath": entry.filepath, "error": err})
 	}
 	log.Info("New insertion", log.Fields{"filepath": entry.filepath})
-	return nil
+	return err
 }
 
 func (db *FileDb) UpdateEntry(filepath string, mtime time.Time, lastactive time.Time, hash string) error {
@@ -90,20 +99,20 @@ func (db *FileDb) UpdateEntry(filepath string, mtime time.Time, lastactive time.
 	if err != nil {
 		fields["errror"] = err
 		log.Warn("Cannot update entry without any new fields", fields)
-		return err
+	} else {
+		log.Info("Record updated", fields)
 	}
-	log.Info("Record updated", fields)
-	return nil
+	return err
 }
 
 func (db *FileDb) RemoveEntry(filepath string) error {
 	_, err := db.Exec("DELETE FROM files WHERE filepath=?", filepath)
 	if err != nil {
 		log.Warn("Unable to delete", log.Fields{"filepath": filepath, "error": err})
-		return err
+	} else {
+		log.Info("Deletion successful", log.Fields{"filepath": filepath})
 	}
-	log.Info("Deletion successful", log.Fields{"filepath": filepath})
-	return nil
+	return err
 }
 
 func (db *FileDb) GetEntry(filepath string) (*DbEntry, error) {
@@ -135,20 +144,22 @@ func (db *FileDb) GetEntry(filepath string) (*DbEntry, error) {
 func CreateDb(fname string) (*FileDb, error) {
 	_, err := os.Stat(fname)
 	if err == nil {
-		log.Fatal("File already exists!", log.Fields{"dbfile": fname})
+		log.Warn("File already exists!", log.Fields{"dbfile": fname})
+		return nil, err
 	} else if os.IsNotExist(err) {
 		dir := filepath.Dir(fname)
 		info2, err2 := os.Stat(dir)
 		if err2 == nil {
 			if !info2.IsDir() {
-				log.Fatal("Directory does not exist", log.Fields{"directory": dir})
+				log.Warn("Directory does not exist", log.Fields{"directory": dir})
+				return nil, err
 			}
 			return createDb(fname)
 		} else {
-			log.Fatal("Cannot read directory", log.Fields{"directory": dir})
+			log.Warn("Cannot read directory", log.Fields{"directory": dir, "error": err2})
 		}
 	} else {
-		log.Fatal("Cannot read directory", log.Fields{"directory": fname})
+		log.Warn("Cannot read directory", log.Fields{"directory": fname, "error": err})
 	}
 	return nil, errors.New("Unknown error")
 }

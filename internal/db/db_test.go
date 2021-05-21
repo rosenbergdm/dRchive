@@ -11,8 +11,19 @@ import (
 	"github.com/rosenbergdm/dRchive/internal/log"
 )
 
+func countEntries(db *FileDb, t *testing.T) int64 {
+	row := db.QueryRow("SELECT COUNT(*) FROM files")
+	var count int64
+	err := row.Scan(&count)
+	if err != nil {
+		t.Fatalf("error querying test db '%v'", err)
+	}
+	return count
+}
+
 func setupTestDb() (*FileDb, func(), string) {
 	debugTests := os.Getenv("DEBUG_TESTS")
+	saveDBs := os.Getenv("DEBUG_SAVE_DBS")
 	if debugTests != "" {
 		log.Config(log.InfoLevel, os.Stdout)
 	} else {
@@ -32,10 +43,13 @@ func setupTestDb() (*FileDb, func(), string) {
 		db.Close()
 		if debugTests != "" {
 			log.Config(log.InfoLevel, os.Stdout)
+		} else {
+			log.Config(log.PanicLevel, os.Stdout)
+		}
+		if saveDBs != "" {
 			fmt.Printf("File is '%s'\n\n", dbfile.Name())
 		} else {
 			os.Remove(dbfile.Name())
-			log.Config(log.PanicLevel, os.Stdout)
 		}
 	}
 	return db, tearDown, dbfile.Name()
@@ -83,7 +97,20 @@ func TestNewEntryNoDups(t *testing.T) {
 }
 
 func TestAddEntry(t *testing.T) {
+	entries := []*DbEntry{
+		{filepath: "/bin/bash", mtime: 0, lastactive: 0, hash: "a4221a3a4344e4f86e70d1e475e7ccee"},
+		{filepath: "/bin/zsh", mtime: 0, lastactive: 0, hash: "99f587cd90ebb1d8ae04ea45bcc66481"},
+	}
 
+	db, tearDown, _ := setupTestDb()
+	defer tearDown()
+	for i := range entries {
+		db.AddEntry(entries[i])
+	}
+	count := countEntries(db, t)
+	if count != 2 {
+		t.Fatalf("Wrong number of entries added, should be 2 but is %d", count)
+	}
 }
 
 func TestRemoveEntry(t *testing.T) {

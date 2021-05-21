@@ -22,6 +22,6 @@ clean:
 	rm -f $(OBJ)
 
 test:
-	cd internal/db && $(GO) test
+	cd internal/db && $(GO) test -v
 
 all: drchive
