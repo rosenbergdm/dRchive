@@ -11,6 +11,15 @@ import (
 	"github.com/rosenbergdm/dRchive/internal/log"
 )
 
+var entries []*DbEntry
+
+func init() {
+	entries = []*DbEntry{
+		{filepath: "/bin/bash", mtime: 0, lastactive: 0, hash: "a4221a3a4344e4f86e70d1e475e7ccee"},
+		{filepath: "/bin/zsh", mtime: 0, lastactive: 0, hash: "99f587cd90ebb1d8ae04ea45bcc66481"},
+	}
+}
+
 func countEntries(db *FileDb, t *testing.T) int64 {
 	row := db.QueryRow("SELECT COUNT(*) FROM files")
 	var count int64
@@ -21,7 +30,7 @@ func countEntries(db *FileDb, t *testing.T) int64 {
 	return count
 }
 
-func setupTestDb() (*FileDb, func(), string) {
+func setupTestDb(withData bool) (*FileDb, func(), string) {
 	debugTests := os.Getenv("DEBUG_TESTS")
 	saveDBs := os.Getenv("DEBUG_SAVE_DBS")
 	if debugTests != "" {
@@ -38,6 +47,11 @@ func setupTestDb() (*FileDb, func(), string) {
 	db, err := CreateDb(dbfile.Name())
 	if err != nil {
 		log.Fatal("setupTestDb error: Could not write test db", log.Fields{"dbfile": dbfile.Name(), "error": err.Error()})
+	}
+	if withData == true {
+		for i := range entries {
+			db.AddEntry(entries[i])
+		}
 	}
 	tearDown := func() {
 		db.Close()
@@ -57,7 +71,7 @@ func setupTestDb() (*FileDb, func(), string) {
 
 func TestNewEntry(t *testing.T) {
 	var db *FileDb
-	db, tearDown, dbfile := setupTestDb()
+	db, tearDown, dbfile := setupTestDb(false)
 	defer tearDown()
 	res := db.NewEntry("/bin/bash", time.Now(), time.Now(), "a4221a3a4344e4f86e70d1e475e7ccee")
 	if res != nil {
@@ -74,7 +88,7 @@ func TestNewEntry(t *testing.T) {
 }
 
 func TestNewEntryNoDups(t *testing.T) {
-	db, tearDown, _ := setupTestDb()
+	db, tearDown, _ := setupTestDb(false)
 	defer tearDown()
 	err := db.NewEntry("/bin/bash", time.Time{}, time.Time{}, "a4221a3a4344e4f86e70d1e475e7ccee")
 	if err != nil {
@@ -97,12 +111,7 @@ func TestNewEntryNoDups(t *testing.T) {
 }
 
 func TestAddEntry(t *testing.T) {
-	entries := []*DbEntry{
-		{filepath: "/bin/bash", mtime: 0, lastactive: 0, hash: "a4221a3a4344e4f86e70d1e475e7ccee"},
-		{filepath: "/bin/zsh", mtime: 0, lastactive: 0, hash: "99f587cd90ebb1d8ae04ea45bcc66481"},
-	}
-
-	db, tearDown, _ := setupTestDb()
+	db, tearDown, _ := setupTestDb(false)
 	defer tearDown()
 	for i := range entries {
 		db.AddEntry(entries[i])
@@ -114,13 +123,50 @@ func TestAddEntry(t *testing.T) {
 }
 
 func TestRemoveEntry(t *testing.T) {
-
+	db, tearDown, _ := setupTestDb(true)
+	defer tearDown()
+	startCount := countEntries(db, t)
+	fname := string("/bin/bash")
+	err := db.RemoveEntry(fname)
+	if err != nil {
+		t.Fatalf("Error removing entry '%s': '%v'", fname, err)
+	}
+	endCount := countEntries(db, t)
+	if endCount != startCount-1 {
+		t.Fatalf("Error removing entry '%s', still %d entries", fname, endCount)
+	}
 }
 
 func TestGetEntry(t *testing.T) {
-
+	db, tearDown, _ := setupTestDb(true)
+	fname := string("/bin/bash")
+	hash := string("a4221a3a4344e4f86e70d1e475e7ccee")
+	defer tearDown()
+	entry, err := db.GetEntry(fname)
+	if err != nil {
+		t.Fatalf("Error retrieving entry '%s': '%v'", fname, err)
+	}
+	if (entry.filepath != fname) || (entry.mtime != 0) || (entry.lastactive != 0) || (entry.hash != hash) {
+		t.Fatalf("Malformed entry returned by query for '%s'", fname)
+	}
+	entry, err = db.GetEntry("/notarealfile")
+	if (err == nil) || (entry != nil) {
+		t.Fatal("Query for missing value failed to err and return nil")
+	}
 }
 
 func TestOpenDb(t *testing.T) {
-
+	db, _, dbfile := setupTestDb(true)
+	db.Close()
+	defer os.Remove(dbfile)
+	var err error
+	db, err = OpenDb(dbfile)
+	defer db.Close()
+	if err != nil {
+		t.Fatalf("Unable to open db '%s': '%v'", dbfile, err)
+	}
+	count := countEntries(db, t)
+	if count != 2 {
+		t.Fatalf("Opened DB not containing correct entry count, 2 != %d", count)
+	}
 }

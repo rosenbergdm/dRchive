@@ -20,7 +20,7 @@ type DbEntry struct {
 	hash       string
 }
 
-func NewDbEntry(f string, m, int64, l int64, h string) *DbEntry {
+func NewDbEntry(f string, m int64, l int64, h string) *DbEntry {
 	return &DbEntry{
 		filepath:   f,
 		mtime:      m,
@@ -122,8 +122,8 @@ func (db *FileDb) GetEntry(filepath string) (*DbEntry, error) {
 		return nil, err
 	}
 	var fpath string
-	var mtime time.Time
-	var lastactive time.Time
+	var mtime int64
+	var lastactive int64
 	var hash string
 	var version int64
 
@@ -133,7 +133,7 @@ func (db *FileDb) GetEntry(filepath string) (*DbEntry, error) {
 		log.Warn("No entry matches query", log.Fields{"filepath": filepath})
 		return nil, err
 	}
-	entry := DbEntry{filepath: fpath, mtime: mtime.Unix(), lastactive: lastactive.Unix(), hash: hash}
+	entry := DbEntry{filepath: fpath, mtime: mtime, lastactive: lastactive, hash: hash}
 	if rows.Next() {
 		log.Fatal("Multiple entries with identical paths found!", log.Fields{"filepath": filepath})
 	}
