@@ -8,18 +8,29 @@ GO = go
 
 OBJ = build/drchive
 
-build/drchive: cmd/drchive/main.go internal/db/db.go internal/file/file.go internal/log/log.go
+SRC = cmd/drchive/main.go \
+			internal/db/db.go \
+			internal/file/file.go \
+			internal/log/log.go
+
+TSTSRC = $(SRC) \
+				 internal/db/db_test.go
+
+build/drchive: $(SRC)
 	$(GO) build -o build/drchive cmd/drchive/main.go
 
-drchive: $(OBJ)
-	$(GO) build -o build/drchive cmd/drchive/main.go
-
-.PHONY: clean all
+.PHONY: clean lint format cleanup
 
 .DEFAULT: all
 
 clean:
 	rm -f $(OBJ)
+
+format: $(SRC) $(TSTSRC)
+	gofmt -s -w $(SRC) $(TSTSRC)
+
+lint: $(SRC) $(TSTSRC)
+	golint $(SRC) $(TSTSRC)
 
 test:
 	cd internal/db && $(GO) test -v
