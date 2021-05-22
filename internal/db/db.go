@@ -32,6 +32,7 @@ func NewDbEntry(f string, m int64, l int64, h string) *DbEntry {
 // SQL Database containing the files and hashes
 type FileDb struct {
 	*sql.DB
+	dbfile string
 }
 
 // Sets default config parameters
@@ -188,7 +189,7 @@ func createDb(fname string) (*FileDb, error) {
 	} else {
 		log.Info("Schema written", log.Fields{"dbfile": fname})
 	}
-	fdb := &FileDb{db}
+	fdb := &FileDb{db, fname}
 	return fdb, nil
 }
 
@@ -198,6 +199,6 @@ func OpenDb(fname string) (*FileDb, error) {
 		log.Fatal("Error opening file with sqlite3", log.Fields{"fname": fname})
 	}
 	log.Info("DB opened", log.Fields{"dbfile": fname})
-	fdb := &FileDb{db}
+	fdb := &FileDb{db, fname}
 	return fdb, nil
 }
