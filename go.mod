@@ -1,4 +1,4 @@
-module github.com/rosenbergdm/dRchive
+module github.com/rosenbergdm/drchive
 
 go 1.16
 

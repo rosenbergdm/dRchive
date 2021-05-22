@@ -4,8 +4,8 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/rosenbergdm/dRchive/internal/db"
-	"github.com/rosenbergdm/dRchive/internal/log"
+	"github.com/rosenbergdm/drchive/internal/db"
+	"github.com/rosenbergdm/drchive/internal/log"
 )
 
 type SymLink struct {

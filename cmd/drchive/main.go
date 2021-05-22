@@ -5,7 +5,7 @@ import (
 
 	docopt "github.com/docopt/docopt-go"
 
-	"github.com/rosenbergdm/dRchive/internal/log"
+	"github.com/rosenbergdm/drchive/internal/log"
 )
 
 func init() {
@@ -19,7 +19,7 @@ func main() {
   drchive [-h | --help]
   drchive
 
-Run the dRchive program
+Run the drchive program
 
 Options:
   --help -h                   Display usage

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rosenbergdm/dRchive/internal/log"
+	"github.com/rosenbergdm/drchive/internal/log"
 )
 
 var entries []*DbEntry

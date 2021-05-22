@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/rosenbergdm/dRchive/internal/log"
+	"github.com/rosenbergdm/drchive/internal/log"
 
 	_ "github.com/mattn/go-sqlite3" // For db driver
 )
